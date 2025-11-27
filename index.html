@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizador Visual - Gestión de Incidentes Críticos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a4a 0%, #2c3e50 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tab {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: #3498db;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .content-section {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2rem;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+
+        h3 {
+            color: #3498db;
+            margin: 25px 0 15px;
+            font-size: 1.5rem;
+        }
+
+        /* Estilos para el diagrama de etapas */
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: relative;
+            margin: 40px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #3498db;
+            border-radius: 2px;
+        }
+
+        .stage {
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .stage-number {
+            width: 50px;
+            height: 50px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 2;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.4);
+        }
+
+        .stage-content {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin-left: 25px;
+            border-radius: 0 10px 10px 0;
+            flex: 1;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stage-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .stage-description {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* Estilos para la matriz de roles */
+        .roles-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .role-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+
+        .role-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .role-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .role-icon {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+
+        .responsibilities {
+            list-style-type: none;
+        }
+
+        .responsibilities li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .responsibilities li:last-child {
+            border-bottom: none;
+        }
+
+        .responsibilities li::before {
+            content: '✓';
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        /* Estilos para la relación RPO/RTO */
+        .rpo-rto-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .rpo-rto-card {
+            flex: 1;
+            min-width: 300px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .rpo-rto-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .definition {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+
+        .stages-impact {
+            margin-top: 20px;
+        }
+
+        .impact-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .impact-item:last-child {
+            border-bottom: none;
+        }
+
+        .impact-stage {
+            font-weight: 600;
+            color: #2c3e50;
+            min-width: 180px;
+        }
+
+        .impact-description {
+            color: #555;
+            flex: 1;
+        }
+
+        /* Estilos para el dashboard unificado */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .dashboard-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .dashboard-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .process-flow {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .process-step {
+            width: 150px;
+            text-align: center;
+            position: relative;
+        }
+
+        .process-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #3498db;
+        }
+
+        .step-circle {
+            width: 80px;
+            height: 80px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.4);
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .step-description {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .process-step:not(:last-child)::after {
+                display: none;
+            }
+            
+            .process-step {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .rpo-rto-container {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gestión de Incidentes Críticos</h1>
+            <p class="subtitle">Organizador visual de procedimientos, roles y métricas de recuperación</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="dashboard">Vista General</button>
+            <button class="tab" data-tab="stages">Etapas del Procedimiento</button>
+            <button class="tab" data-tab="roles">Roles y Responsabilidades</button>
+            <button class="tab" data-tab="rpo-rto">RPO y RTO</button>
+        </div>
+
+        <!-- Dashboard Unificado -->
+        <section id="dashboard" class="content-section active">
+            <h2>Vista General del Proceso de Gestión de Incidentes</h2>
+            
+            <div class="dashboard">
+                <div class="dashboard-card">
+                    <h3 class="dashboard-title">Flujo del Proceso</h3>
+                    <div class="process-flow">
+                        <div class="process-step">
+                            <div class="step-circle">1</div>
+                            <div class="step-title">Detección</div>
+                            <div class="step-description">Identificación del incidente</div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-circle">2</div>
+                            <div class="step-title">Contención</div>
+                            <div class="step-description">Limitar el impacto</div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-circle">3</div>
+                            <div class="step-title">Análisis</div>
+                            <div class="step-description">Evaluar daños y causas</div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-circle">4</div>
+                            <div class="step-title">Comunicación</div>
+                            <div class="step-description">Informar a stakeholders</div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-circle">5</div>
+                            <div class="step-title">Restauración</div>
+                            <div class="step-description">Recuperar operaciones</div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-circle">6</div>
+                            <div class="step-title">Validación</div>
+                            <div class="step-description">Verificar recuperación</div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-circle">7</div>
+                            <div class="step-title">Documentación</div>
+                            <div class="step-description">Registrar lecciones</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3 class="dashboard-title">Métricas Clave</h3>
+                    <div class="definition">
+                        <h4>RTO (Recovery Time Objective)</h4>
+                        <p>Tiempo máximo aceptable para restaurar servicios después de un incidente.</p>
+                        <div class="impact-item">
+                            <div class="impact-stage">Objetivo:</div>
+                            <div class="impact-description">Minimizar tiempo de inactividad</div>
+                        </div>
+                    </div>
+                    <div class="definition">
+                        <h4>RPO (Recovery Point Objective)</h4>
+                        <p>Pérdida máxima de datos aceptable medida en tiempo.</p>
+                        <div class="impact-item">
+                            <div class="impact-stage">Objetivo:</div>
+                            <div class="impact-description">Minimizar pérdida de datos</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card full-width">
+                    <h3 class="dashboard-title">Roles Principales</h3>
+                    <div class="roles-matrix">
+                        <div class="role-card">
+                            <div class="role-title">
+                                <span class="role-icon">👨‍💼</span> Gerente de Incidentes
+                            </div>
+                            <ul class="responsibilities">
+                                <li>Coordinar la respuesta al incidente</li>
+                                <li>Tomar decisiones críticas</li>
+                                <li>Comunicar el estado a la dirección</li>
+                            </ul>
+                        </div>
+                        <div class="role-card">
+                            <div class="role-title">
+                                <span class="role-icon">🔧</span> Equipo Técnico
+                            </div>
+                            <ul class="responsibilities">
+                                <li>Contener y resolver el incidente</li>
+                                <li>Restaurar servicios y datos</li>
+                                <li>Documentar soluciones técnicas</li>
+                            </ul>
+                        </div>
+                        <div class="role-card">
+                            <div class="role-title">
+                                <span class="role-icon">📞</span> Comunicaciones
+                            </div>
+                            <ul class="responsibilities">
+                                <li>Gestionar comunicación interna/externa</li>
+                                <li>Preparar declaraciones públicas</li>
+                                <li>Coordinar con relaciones públicas</li>
+                            </ul>
+                        </div>
+                        <div class="role-card">
+                            <div class="role-title">
+                                <span class="role-icon">📊</span> Analista
+                            </div>
+                            <ul class="responsibilities">
+                                <li>Investigar causas raíz</li>
+                                <li>Evaluar impacto del incidente</li>
+                                <li>Documentar lecciones aprendidas</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Etapas del Procedimiento -->
+        <section id="stages" class="content-section">
+            <h2>Etapas del Procedimiento ante Incidentes Críticos</h2>
+            
+            <div class="timeline">
+                <div class="stage">
+                    <div class="stage-number">1</div>
+                    <div class="stage-content">
+                        <div class="stage-title">Detección y Contención</div>
+                        <div class="stage-description">
+                            Identificación temprana del incidente y aplicación de medidas inmediatas para limitar su expansión y minimizar el impacto en operaciones críticas.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stage">
+                    <div class="stage-number">2</div>
+                    <div class="stage-content">
+                        <div class="stage-title">Análisis del Daño</div>
+                        <div class="stage-description">
+                            Evaluación exhaustiva del impacto, identificación de sistemas afectados, determinación de causas raíz y cuantificación de pérdidas.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stage">
+                    <div class="stage-number">3</div>
+                    <div class="stage-content">
+                        <div class="stage-title">Comunicación y Escalamiento</div>
+                        <div class="stage-description">
+                            Notificación a stakeholders internos y externos, reporte a autoridades si es necesario, y gestión transparente de la información.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stage">
+                    <div class="stage-number">4</div>
+                    <div class="stage-content">
+                        <div class="stage-title">Restauración</div>
+                        <div class="stage-description">
+                            Recuperación de servicios, restauración de datos desde backups, y reinstalación de sistemas para retornar a la operatividad normal.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stage">
+                    <div class="stage-number">5</div>
+                    <div class="stage-content">
+                        <div class="stage-title">Validación</div>
+                        <div class="stage-description">
+                            Verificación de que los sistemas restaurados funcionan correctamente, pruebas de integridad de datos y confirmación de cumplimiento de RTO/RPO.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stage">
+                    <div class="stage-number">6</div>
+                    <div class="stage-content">
+                        <div class="stage-title">Documentación y Mejora</div>
+                        <div class="stage-description">
+                            Registro detallado del incidente, análisis de lecciones aprendidas, actualización de procedimientos e implementación de mejoras preventivas.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Roles y Responsabilidades -->
+        <section id="roles" class="content-section">
+            <h2>Roles y Responsabilidades en la Gestión de Incidentes</h2>
+            
+            <div class="roles-matrix">
+                <div class="role-card">
+                    <div class="role-title">
+                        <span class="role-icon">👨‍💼</span> Gerente de Incidentes
+                    </div>
+                    <ul class="responsibilities">
+                        <li>Coordinar todos los aspectos de la respuesta al incidente</li>
+                        <li>Tomar decisiones críticas sobre prioridades y recursos</li>
+                        <li>Comunicar el estado del incidente a la alta dirección</li>
+                        <li>Aprobar el cierre formal del incidente</li>
+                        <li>Asignar tareas a los equipos especializados</li>
+                    </ul>
+                </div>
+                
+                <div class="role-card">
+                    <div class="role-title">
+                        <span class="role-icon">🔧</span> Equipo Técnico
+                    </div>
+                    <ul class="responsibilities">
+                        <li>Implementar medidas de contención inmediatas</li>
+                        <li>Diagnosticar causas técnicas del incidente</li>
+                        <li>Ejecutar procedimientos de recuperación</li>
+                        <li>Restaurar servicios y datos afectados</li>
+                        <li>Documentar soluciones técnicas implementadas</li>
+                    </ul>
+                </div>
+                
+                <div class="role-card">
+                    <div class="role-title">
+                        <span class="role-icon">📞</span> Equipo de Comunicaciones
+                    </div>
+                    <ul class="responsibilities">
+                        <li>Gestionar comunicación interna con empleados</li>
+                        <li>Coordinar comunicación externa con clientes</li>
+                        <li>Preparar declaraciones públicas y respuestas</li>
+                        <li>Mantener actualizados los canales de comunicación</li>
+                        <li>Gestionar relaciones con medios si es necesario</li>
+                    </ul>
+                </div>
+                
+                <div class="role-card">
+                    <div class="role-title">
+                        <span class="role-icon">📊</span> Analista de Incidentes
+                    </div>
+                    <ul class="responsibilities">
+                        <li>Investigar causas raíz del incidente</li>
+                        <li>Evaluar impacto financiero y operacional</li>
+                        <li>Documentar cronología detallada del evento</li>
+                        <li>Identificar lecciones aprendidas</li>
+                        <li>Recomendar mejoras a procesos y controles</li>
+                    </ul>
+                </div>
+                
+                <div class="role-card">
+                    <div class="role-title">
+                        <span class="role-icon">⚖️</span> Representante Legal
+                    </div>
+                    <ul class="responsibilities">
+                        <li>Asesorar sobre obligaciones legales y regulatorias</li>
+                        <li>Gestionar notificaciones a autoridades</li>
+                        <li>Revisar comunicaciones desde perspectiva legal</li>
+                        <li>Evaluar responsabilidades y riesgos legales</li>
+                    </ul>
+                </div>
+                
+                <div class="role-card">
+                    <div class="role-title">
+                        <span class="role-icon">👥</span> Líderes de Negocio
+                    </div>
+                    <ul class="responsibilities">
+                        <li>Priorizar recuperación de procesos críticos</li>
+                        <li>Tomar decisiones sobre continuidad del negocio</li>
+                        <li>Comunicar impacto a clientes y partners</li>
+                        <li>Aprobar planes de recuperación alternativos</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- RPO y RTO -->
+        <section id="rpo-rto" class="content-section">
+            <h2>Relación con RPO y RTO</h2>
+            
+            <div class="rpo-rto-container">
+                <div class="rpo-rto-card">
+                    <h3 class="rpo-rto-title">RPO (Recovery Point Objective)</h3>
+                    <div class="definition">
+                        <p><strong>Definición:</strong> El punto máximo en el tiempo al que deben recuperarse los datos después de un incidente, definiendo la pérdida máxima de datos aceptable.</p>
+                    </div>
+                    
+                    <h4>Impacto en las Etapas:</h4>
+                    <div class="stages-impact">
+                        <div class="impact-item">
+                            <div class="impact-stage">Detección</div>
+                            <div class="impact-description">Determina la frecuencia de backups necesaria</div>
+                        </div>
+                        <div class="impact-item">
+                            <div class="impact-stage">Análisis</div>
+                            <div class="impact-description">Define la cantidad de datos potencialmente perdidos</div>
+                        </div>
+                        <div class="impact-item">
+                            <div class="impact-stage">Restauración</div>
+                            <div class="impact-description">Establece qué backup usar para la recuperación</div>
+                        </div>
+                        <div class="impact-item">
+                            <div class="impact-stage">Validación</div>
+                            <div class="impact-description">Verifica integridad de datos desde el punto de recuperación</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rpo-rto-card">
+                    <h3 class="rpo-rto-title">RTO (Recovery Time Objective)</h3>
+                    <div class="definition">
+                        <p><strong>Definición:</strong> El tiempo máximo aceptable que puede tomar restaurar servicios después de un incidente, definiendo el tiempo de inactividad tolerable.</p>
+                    </div>
+                    
+                    <h4>Impacto en las Etapas:</h4>
+                    <div class="stages-impact">
+                        <div class="impact-item">
+                            <div class="impact-stage">Contención</div>
+                            <div class="impact-description">Debe completarse rápidamente para no afectar RTO</div>
+                        </div>
+                        <div class="impact-item">
+                            <div class="impact-stage">Restauración</div>
+                            <div class="impact-description">Proceso crítico que directamente impacta el RTO</div>
+                        </div>
+                        <div class="impact-item">
+                            <div class="impact-stage">Validación</div>
+                            <div class="impact-description">Debe ser eficiente para no extender el tiempo de recuperación</div>
+                        </div>
+                        <div class="impact-item">
+                            <div class="impact-stage">Documentación</div>
+                            <div class="impact-description">Analiza cumplimiento del RTO establecido</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 40px; background: #e8f4fc; padding: 25px; border-radius: 10px; border-left: 4px solid #3498db;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">Relación entre RPO, RTO y las Etapas del Incidente</h3>
+                <p style="line-height: 1.6; color: #555;">
+                    Los objetivos RPO y RTO son métricas críticas que guían la respuesta a incidentes. El <strong>RPO</strong> influye principalmente en las etapas de análisis y restauración, 
+                    definiendo cuántos datos se pueden perder. El <strong>RTO</strong> impacta especialmente las etapas de contención y restauración, estableciendo el tiempo máximo de recuperación. 
+                    Una planificación efectiva requiere que estos objetivos estén alineados con los procedimientos de cada etapa y que los equipos comprendan su importancia para 
+                    priorizar acciones durante un incidente crítico.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Funcionalidad de pestañas
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    
+                    // Remover clase active de todas las pestañas y secciones
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contentSections.forEach(section => section.classList.remove('active'));
+                    
+                    // Agregar clase active a la pestaña y sección seleccionada
+                    this.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
+            
+            // Efectos visuales para las tarjetas de roles
+            const roleCards = document.querySelectorAll('.role-card');
+            roleCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px)';
+                    this.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
